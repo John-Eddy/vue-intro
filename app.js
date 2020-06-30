@@ -13,20 +13,16 @@ var vm = new Vue({
             this.contactsList = [];
         }
     },
-    watch: {
-        contactsList: {
-            handeler: function(val) {
-                Cookies.set('contactsList', JSON.stringify(this.contactsList), { expires: 9999 } )
-                console.log('Cookie saved')
-                return val;
-            },
-            deep: true
-        }
-    },
+
     methods: {
         selectContact: function (contact) {
             this.selectedContact = this.selectedContact == contact ? null : contact;
             this.contactAdding = false;
+            this.contactAction = 'view';
+        },
+        persist: function () {
+            Cookies.set('contactsList', JSON.stringify(this.contactsList), { expires: 9999 })
+            console.log('Cookie saved')
         },
         generateNewIndex: function () {
             var newIndex = this.contactsList.length;
@@ -47,6 +43,7 @@ var vm = new Vue({
                     this.contactsList.splice(index, 1)
                 }
             }
+            this.persist();
             this.selectedContact = null;
         },
         saveContact: function () {
@@ -60,8 +57,9 @@ var vm = new Vue({
                             this.contactsList[index] = this.selectedContact;
                         }
                     }
-                } 
+                }
                 this.contactsList.push(this.selectedContact);
+                this.persist();
                 this.contactAction = 'view';
             }
         },
@@ -73,7 +71,9 @@ var vm = new Vue({
             for (contact of this.contactsList) {
                 var row = "";
                 for (key in contact) {
-                    row += contact[key] + ',';
+                    if (key != 'id') {
+                        row += contact[key] + ',';
+                    }
                 }
                 csvContent += row + "\r\n";
             }
@@ -100,38 +100,28 @@ var vm = new Vue({
                             columns = rows[i].split(',');
                             continue;
                         }
-
                         if (rows[i].length > 0) {
                             var arrayRow = rows[i].split(',')
-                            var newContact = {}; 
+                            var newContact = {};
                             for (j in columns) {
                                 newContact[columns[j]] = arrayRow[j];
                             }
                             newContactsList.push(newContact);
                         }
-                       
                     }
-                    if(confirm(newContactsList.length + ' lignes vont être ajouté, valider ?')) {
+                    if (confirm(newContactsList.length + ' lignes vont être ajouté, valider ?')) {
                         for (newContact of newContactsList) {
                             newContact.id = self.generateNewIndex();
                             self.contactsList.push(newContact);
+                            self.persist();
                             self.newImport = false;
+                            self.contactAction = 'view';
+
                         }
                     }
                 };
             })(file);
-            r.readAsText(file, function() {
-                
-                console.log(newContactsList);
-                if(confirm(newContactsList.length + ' lignes vont être ajouté, valider ?')) {
-                    for (newContact of newContactsList) {
-                        newContact.id = this.generateNewIndex();
-                        this.contactsList.push(newContact);
-                        this.newImport = false;
-                    }
-                }
-            });
-            
+            r.readAsText(file);
         }
     }
 });
