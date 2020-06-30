@@ -47,7 +47,7 @@ var vm = new Vue({
             this.selectedContact = null;
         },
         saveContact: function () {
-            console.log(this.contactAction); 
+            console.log(this.contactAction);
             if (this.selectedContact.firstname && this.selectedContact.lastname && this.selectedContact.phone) {
                 if (this.contactAction == "add") {
                     this.selectedContact.id = this.generateNewIndex();
@@ -66,7 +66,7 @@ var vm = new Vue({
         },
         exportCSV: function () {
 
-            var csvContent = "data:text/csv;charset=utf-8,";
+            var csvContent = "";            
             var row = Object.keys(this.contactsList[0]).join(",");
             csvContent += row + "\r\n";
             for (contact of this.contactsList) {
@@ -79,8 +79,16 @@ var vm = new Vue({
                 csvContent += row + "\r\n";
             }
 
-            var encodedUri = encodeURI(csvContent);
-            window.open(encodedUri);
+            var a = document.createElement("a");
+            document.body.appendChild(a);
+            a.style = "display: none";
+
+            var file = new Blob([csvContent], { type:  "data:text/csv;charset=utf-8," });
+            url = window.URL.createObjectURL(file);
+            a.href = url;
+            a.download = 'export_contacts.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
 
         },
         importCSV: function (event) {
