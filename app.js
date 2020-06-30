@@ -47,9 +47,11 @@ var vm = new Vue({
             this.selectedContact = null;
         },
         saveContact: function () {
+            console.log(this.contactAction); 
             if (this.selectedContact.firstname && this.selectedContact.lastname && this.selectedContact.phone) {
                 if (this.contactAction == "add") {
-                    this.selectContact.id = this.generateNewIndex();
+                    this.selectedContact.id = this.generateNewIndex();
+                    this.contactsList.push(this.selectedContact);
                 }
                 else {
                     for (index in this.contactsList) {
@@ -58,7 +60,6 @@ var vm = new Vue({
                         }
                     }
                 }
-                this.contactsList.push(this.selectedContact);
                 this.persist();
                 this.contactAction = 'view';
             }
